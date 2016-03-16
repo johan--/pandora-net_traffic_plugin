@@ -1,0 +1,41 @@
+#!/bin/bash
+# Network ttraffic by interfaces monitorization plugin for Pandora FMS agent
+# Author: Alejandro Suarez Cebrian
+# Version: 0.1
+# Date: 03/03/2015
+#
+# This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+function print_modulo() {
+   echo -e "\t<module>"
+   echo -e "\t<name><![CDATA[$1]]></name>"
+   echo -e "\t<description><![CDATA[$2]]></description>"
+   echo -e "\t<type>generic_data_inc</type>"
+   echo -e "\t<min>0</min>"
+   echo -e "\t<disabled>0</disabled>"
+   echo -e "\t<data><![CDATA[$3]]></data>"
+   echo -e "\t</module>"
+   echo -e ""
+}
+
+m="TX RX"
+declare -A message
+message["TX"]="sent"
+message["RX"]="received"
+for inter in /sys/class/net/*; do
+  for modo in $m; do
+     valor=$(cat $inter/statistics/${modo,,}_bytes|head -c -1)
+     print_modulo "${inter##*/} $modo bytes" "bytes/second ${message[$modo]} by ${inter##*/}" "$valor"
+  done
+done
